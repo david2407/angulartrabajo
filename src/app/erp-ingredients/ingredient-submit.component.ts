@@ -56,12 +56,6 @@ export class IngredientSubmitComponent implements OnInit {
   }
 
   onData() {
-    // this.filteredSuppliers = this.formData
-    //   .get('supplierId')
-    //   .valueChanges.pipe(map((input) => []))
-    // this.filteredClients = this.formData
-    //   .get('ownerId')
-    //   .valueChanges.pipe(map((input) => []))
 
     this.filteredAllergen = this.allergenCtrl.valueChanges.pipe(
       map((input) => {

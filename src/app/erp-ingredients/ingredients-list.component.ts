@@ -39,15 +39,6 @@ export class IngredientsListComponent implements OnInit {
   @Input() savedFilterValues: [string, string[]]
   @Input() tabs: string[]
 
-  onSearch() {
-    !this.tabs.includes('New Search') &&
-      this.searchEvent.emit(this.dataTable.filter)
-  }
-
-  onEmptySearch() {
-    this.EmptySearch.emit()
-  }
-
   isOnline!: boolean
   stateKey = 'ingredients'
   loaded: boolean = false
@@ -168,10 +159,18 @@ export class IngredientsListComponent implements OnInit {
     // const state: any = this.state.getState(this.stateKey)
     if (this.savedFilterValues) {
       this.updateFilter(this.savedFilterValues[1])
-      //this.customFilters = this.savedFilterValues[1]
     } else {
       this.updateFilter()
     }
+  }
+
+  onSearch() {
+    !this.tabs.includes('New Search') &&
+      this.searchEvent.emit(this.dataTable.filter)
+  }
+
+  onEmptySearch() {
+    this.EmptySearch.emit()
   }
 
   updateFilter(change?) {
