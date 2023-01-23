@@ -1,0 +1,268 @@
+<div class="page-container fixed-container">
+  <mat-progress-bar mode="indeterminate" *ngIf="!loaded"></mat-progress-bar>
+  <ng-container *ngIf="loaded">
+    <form [formGroup]="formData" (ngSubmit)="onSubmit()">
+      <div class="wrapper">
+        <h3>Basic info</h3>
+        <div class="grid-tmpl">
+          <div>
+            <mat-form-field class="block">
+              <mat-label>Title</mat-label>
+              <input matInput placeholder="Title" formControlName="title" required />
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>Public title</mat-label>
+              <input matInput placeholder="Public title" formControlName="publicTitle" />
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>Functional title</mat-label>
+              <input matInput placeholder="Functional title" formControlName="functionalTitle" />
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>Article nr</mat-label>
+              <input matInput placeholder="Article nr" formControlName="articleNr" />
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>Internal Article nr</mat-label>
+              <input matInput placeholder="Internal Article nr" formControlName="internalArticleNr" />
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>EAN</mat-label>
+              <input matInput placeholder="EAN" formControlName="ean" />
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>E Number</mat-label>
+              <input matInput placeholder="E Number" formControlName="eNumber" />
+            </mat-form-field>
+
+            <mat-checkbox class="block" formControlName="marked">Is marked</mat-checkbox>
+
+            <!-- <mat-checkbox class="block" formControlName="public">Is public</mat-checkbox> -->
+          </div>
+
+          <div>
+            <mat-form-field class="block">
+              <mat-label>Unit</mat-label>
+              <mat-select placeholder="Unit" formControlName="unit" required>
+                <mat-option>--</mat-option>
+                <mat-option *ngFor="let unit of utils.units" [value]="unit">
+                  {{ unit }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>Shelf</mat-label>
+              <input matInput placeholder="Shelf" formControlName="shelf" />
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>Label Size</mat-label>
+              <input matInput placeholder="Label Size" formControlName="labelSize" />
+            </mat-form-field>
+
+            <!-- <mat-form-field class="block">
+              <mat-label>Owner</mat-label>
+              <input matInput formControlName="ownerId" placeholder="Owner" aria-mat-label="Owner"
+                [matAutocomplete]="autoOwner" required />
+              <mat-autocomplete #autoOwner="matAutocomplete">
+                <mat-option *ngFor="let client of filteredClients | async" [value]="client._id">
+                  {{ client.title }}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field> -->
+
+            <!-- <mat-form-field class="block">
+              <mat-label>Supplier</mat-label>
+              <input matInput formControlName="supplierId" placeholder="Supplier" aria-mat-label="Supplier"
+                [matAutocomplete]="autoSupplier" />
+              <mat-hint *ngIf="
+          formData.controls['supplierId'].value &&
+          formData.controls['supplierId'].value.length !== 24
+        "><span class="mat-error">Not valid supplier</span></mat-hint>
+              <mat-autocomplete #autoSupplier="matAutocomplete">
+                <mat-option *ngFor="let supplier of filteredSuppliers | async" [value]="supplier._id">
+                  {{ supplier.title }}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field> -->
+
+            <mat-form-field class="block">
+              <mat-label>Expiration date</mat-label>
+              <input matInput name="date" formControlName="expirationDate" [matDatepicker]="picker"
+                placeholder="Expiration date" />
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="wrapper">
+        <h3>Category</h3>
+
+        <mat-radio-group formControlName="category" required>
+          <ng-container *ngFor="let category of utils.categories">
+            <mat-radio-button class="block"
+              *ngIf="!formData.get('category').value || changeCategory.value || category.value === formData.get('category').value"
+              [value]="category.value">
+              {{category.name}}
+            </mat-radio-button>
+          </ng-container>
+        </mat-radio-group>
+
+        <button mat-raised-button class="mt-12" *ngIf="formData.get('category').value && !changeCategory.value"
+          (click)="changeCategory.setValue(true)">
+          Change category
+        </button>
+      </div>
+
+      <!-- <div class="wrapper">
+        <h3>Inventory</h3>
+
+        <ng-container [formGroup]="formInventory">
+          <div class="wrapper" *ngFor="let wp of formInventory.controls | keyvalue" [formGroupName]="wp.key">
+            <h4>{{wp.value.value.title}}</h4>
+
+            <div class="mt-4">
+              <div class="group-inline">
+                <span>Batch: </span>
+                <button mat-raised-button type="button">Add Batch</button>
+              </div>
+              <div class="group-inline mt-4" *ngIf="formInventory.value[wp.key].batchList?.length">
+                <mat-chip *ngFor="let batch of formInventory.value[wp.key].batchList">
+                  <span>{{batch}}</span>
+                  <mat-icon matChipRemove (click)="removeBatch(wp.key, batch)">cancel</mat-icon>
+                </mat-chip>
+              </div>
+            </div>
+
+            <div class="mt-8" *ngIf="data?._id"> Qty: {{(formInventory.value[wp.key].quantity || 0) +
+              formInventory.value[wp.key].addToQuantity - formInventory.value[wp.key].removeFromQuantity
+              | number: '1.0-50' }}</div>
+
+            <div class="quantity group">
+              <mat-form-field class="half-width no-margin">
+                <mat-label>Positive quantity</mat-label>
+                <input matInput type="number" placeholder="Positive quantity" formControlName="addToQuantity" />
+              </mat-form-field>
+
+              <mat-form-field class="half-width no-margin">
+                <mat-label>Negative quantity</mat-label>
+                <input matInput type="number" placeholder="Negative quantity" formControlName="removeFromQuantity" />
+              </mat-form-field>
+            </div>
+          </div>
+        </ng-container>
+      </div> -->
+
+      <div class="wrapper">
+        <h3>Prices</h3>
+
+        <mat-form-field class="block">
+          <mat-label>Price</mat-label>
+          <input matInput type="number" placeholder="Price" formControlName="price" required />
+        </mat-form-field>
+
+        <mat-form-field class="block" *ngIf="auth.isSuperAdmin || permissions.showPrivatePrices">
+          <mat-label>Price Private</mat-label>
+          <input matInput type="number" placeholder="Price Private" formControlName="pricePrivate" />
+        </mat-form-field>
+
+        <mat-form-field class="block">
+          <mat-label>Currency</mat-label>
+          <mat-select placeholder="Currency" formControlName="currency" required>
+            <mat-option>--</mat-option>
+            <mat-option *ngFor="let currency of currencies" [value]="currency">
+              {{ currency }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="wrapper">
+        <h3>Allergen</h3>
+        <mat-form-field class="block">
+          <mat-label>Allergen</mat-label>
+          <mat-chip-grid #chipAllergenList aria-label="Allergen selection">
+            <mat-chip-row *ngFor="let allergen of this.formData.get('allergen').value" [removable]="true"
+              (removed)="removeAllergen(allergen)">
+              {{allergen}}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip-row>
+            <input placeholder="Allergen" #allergenInput [formControl]="allergenCtrl" [matAutocomplete]="autoAllergen"
+              [matChipInputFor]="chipAllergenList" />
+          </mat-chip-grid>
+          <mat-autocomplete #autoAllergen="matAutocomplete" (optionSelected)="selectAllergen($event)">
+            <mat-option *ngFor="let allergen of filteredAllergen | async" [value]="allergen.value">
+              {{allergen.name}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+
+      <div class="wrapper">
+        <h3>Nutritional info</h3>
+
+        <mat-form-field class="block">
+          <mat-label>Carbs %</mat-label>
+          <input matInput type="number" placeholder="Carbs %" formControlName="carbsPerCent" />
+        </mat-form-field>
+
+        <mat-form-field class="block">
+          <mat-label>Carbs % of which sugars</mat-label>
+          <input matInput type="number" placeholder="Carbs % of which sugars" formControlName="carbsSugarPerCent" />
+        </mat-form-field>
+
+        <mat-form-field class="block">
+          <mat-label>Protein %</mat-label>
+          <input matInput type="number" placeholder="Protein %" formControlName="proteinPerCent" />
+        </mat-form-field>
+
+        <mat-form-field class="block">
+          <mat-label>Fat %</mat-label>
+          <input matInput type="number" placeholder="Fat %" formControlName="fatPerCent" />
+        </mat-form-field>
+
+        <mat-form-field class="block">
+          <mat-label>Fat % of which saturated</mat-label>
+          <input matInput type="number" placeholder="Fat % of which saturated" formControlName="fatPerCentSaturated" />
+        </mat-form-field>
+
+        <mat-form-field class="block">
+          <mat-label>Salt %</mat-label>
+          <input matInput type="number" placeholder="Salt %" formControlName="saltPerCent" />
+        </mat-form-field>
+
+        <mat-form-field class="block">
+          <mat-label>Fiber %</mat-label>
+          <input matInput type="number" placeholder="Fiber %" formControlName="fiberPerCent" />
+        </mat-form-field>
+      </div>
+
+      <div class="wrapper">
+        <h3>Notes</h3>
+
+        <mat-form-field class="block">
+          <mat-label>Note</mat-label>
+          <textarea matInput placeholder="Note" formControlName="note"></textarea>
+        </mat-form-field>
+      </div>
+    </form>
+  </ng-container>
+</div>
+
+<div class="actions">
+  <div class="left">
+    <a mat-raised-button [routerLink]="['..']"> Cancel </a>
+    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="formData && formData.invalid">
+      Save
+    </button>
+  </div>
+</div>

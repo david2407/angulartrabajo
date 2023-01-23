@@ -1,0 +1,24 @@
+h3
+  @apply my-0
+
+.overlay
+  @apply fixed top-0 right-0 bottom-0 left-0 bg-black/20 backdrop-blur
+  z-index: 998
+
+.box
+  z-index: 999
+  background: #efefef
+  border-left: 1px solid #ddd
+
+.options
+  // background: $secondary-background-color
+
+.option
+  @apply py-3 px-6
+  border-top: 1px solid #efefef
+  border-bottom: 1px solid #ddd
+  &:last-child
+    @apply mb-0
+  .expanded
+    @apply pt-3
+

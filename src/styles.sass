@@ -1,0 +1,75 @@
+@use '@angular/material' as mat
+
+@import 'tailwindcss/base'
+@import 'tailwindcss/components'
+@import 'tailwindcss/utilities'
+
+$theme-primary: mat.define-palette(mat.$blue-palette, 700)
+$theme-accent: mat.define-palette(mat.$amber-palette)
+$theme-warn: mat.define-palette(mat.$red-palette)
+$theme: mat.define-light-theme((color: (primary: $theme-primary, accent: $theme-accent, warm: $theme-warn)))
+
+@include mat.core()
+@include mat.all-component-themes($theme)
+
+html
+  @apply font-sans box-border
+
+*,
+*:before,
+*:after
+  box-sizing: inherit
+
+body
+  @apply m-0
+
+app-root
+  @apply block
+
+.block
+  @apply w-full
+  display: block
+
+.wrapper
+  @apply p-8 mb-8
+  h3
+    margin-top: 0
+    margin-bottom: 1.5em
+
+.page-container
+  @apply mx-auto px-8 pt-8 pb-20
+
+.fixed-container
+  @apply container mx-auto
+
+div.actions
+  @apply fixed right-0 bottom-0 left-0 py-2 px-4 z-50 bg-white flex justify-between overflow-auto whitespace-nowrap
+  border-top: 1px solid #ddd
+
+  .left,
+  .right
+    @apply flex gap-2
+
+  button.active
+    color: #60ADED
+
+table:not(.mat-calendar-table):not(.owl-dt-calendar-table)
+  @apply w-full mb-8 text-left
+  border-radius: 5px
+  border: 1px solid #000
+  background: #f7f7f7
+  &:not(.mat-table):not(.no-style)
+    padding: 5px
+    thead th
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12)
+      font-weight: 500
+      font-size: 12px
+      color: rgba(0, 0, 0, 0.54)
+    tbody
+      tr:not(:last-child) td
+        border-bottom: 1px dashed #ccc
+
+table:not(.mat-calendar-table):not(.owl-dt-calendar-table):not(.no-style)
+  tr:not(.item-detail-row) td,
+  th
+    padding: 10px

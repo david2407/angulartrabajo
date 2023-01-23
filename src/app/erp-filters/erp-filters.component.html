@@ -1,0 +1,294 @@
+<ng-container [formGroup]="filtersForm">
+  <form class="flex items-center flex-wrap gap-4" (ngSubmit)="done()">
+    <ng-container *ngFor="let filter of activeFilters">
+      <div class="w-full md:w-auto" *ngIf="filter.fieldType !== 'boolean'">
+        <ng-container
+          *ngTemplateOutlet="filters; context: { filter: filter }"
+        ></ng-container>
+      </div>
+    </ng-container>
+    <button
+      type="button"
+      mat-raised-button
+      (click)="showFilters = !showFilters"
+    >
+      <span class="rounded bg-gray-300 py-1 px-2 mr-1">{{
+        activeFilters.length
+      }}</span>
+      Filters
+    </button>
+    <button
+      type="submit"
+      mat-raised-button
+      color="primary"
+      (click)="done()"
+      *ngIf="activeFilters.length"
+    >
+      Apply filters
+    </button>
+    <button
+      type="button"
+      mat-raised-button
+      color="primary"
+      (click)="openInputTabName()"
+      *ngIf="activeFilters.length"
+    >
+      Save search
+    </button>
+  </form>
+
+  <div *ngIf="showFilters">
+    <div class="overlay" (click)="showFilters = false"></div>
+    <div class="box fixed top-0 right-0 bottom-0 overflow-auto">
+      <div
+        class="px-4 pt-6 pb-4 flex justify-between items-center gap-2 border border-solid border-gray-200"
+      >
+        <div class="flex items-center">
+          <button type="button" mat-stroked-button (click)="save()">
+            Save as default
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" mat-stroked-button (click)="clear()">
+            Clear
+          </button>
+          <!-- <button type="button" mat-raised-button color="primary" (click)="done()">Apply filters</button> -->
+          <button
+            type="button"
+            mat-stroked-button
+            color="warn"
+            (click)="closeAndSaveState()"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+      <div class="options">
+        <div
+          class="option"
+          *ngFor="let filter of validFilters"
+          [class.active]="filter.active"
+        >
+          <ng-container *ngIf="filter.fieldType === 'boolean'">
+            <mat-checkbox
+              (change)="filter.active = $event.checked; onOptionToggle()"
+              [formControlName]="filter.name"
+            >
+              {{ filter.title }}
+            </mat-checkbox>
+          </ng-container>
+          <ng-container *ngIf="filter.fieldType !== 'boolean'">
+            <mat-checkbox
+              (change)="filter.active = $event.checked; onOptionToggle()"
+              [checked]="filter.active"
+            >
+              {{ filter.title }}</mat-checkbox
+            >
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showSearchName">
+    <div class="overlay" (click)="showSearchName = false"></div>
+    <div class="box fixed top-0 right-0 bottom-0 overflow-auto">
+      <div
+        class="px-4 pt-6 pb-4 flex justify-between items-center gap-2 border border-solid border-gray-200"
+      >
+        <div class="flex items-center">
+          <mat-form-field
+            class="block"
+          >
+            <h1>Filter name</h1>
+            <input
+              type="text"
+              [(ngModel)]="tabName"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <button
+              type="button"
+              mat-stroked-button
+              (click)="saveTabFilter(); closeInputTabName()"
+            >
+              Save
+            </button>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #filters let-filter="filter">
+    <mat-form-field
+      class="block"
+      *ngIf="filter.fieldType === 'string' && !filter.interface"
+    >
+      <mat-label>{{ filter.title }}</mat-label>
+      <input
+        matInput
+        [placeholder]="filter.title"
+        [formControlName]="filter.name"
+      />
+    </mat-form-field>
+
+    <mat-form-field
+      class="block"
+      *ngIf="
+        filter.fieldType === 'string' && filter.interface === 'autocomplete'
+      "
+    >
+      <mat-label>{{ filter.title }}</mat-label>
+      <input
+        matInput
+        [placeholder]="filter.title"
+        [matAutocomplete]="auto"
+        [formControlName]="filter.name"
+      />
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        [displayWith]="stringAutocomplete(filter).bind(this)"
+      >
+        <mat-option>-</mat-option>
+        <mat-option
+          *ngFor="let option of filter.opts"
+          [value]="option[filter.optValue]"
+          >{{ option[filter.optTitle] }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field
+      class="block"
+      *ngIf="filter.fieldType === 'reference' && filter.interface === 'select'"
+    >
+      <mat-label>{{ filter.title }}</mat-label>
+      <mat-select
+        [placeholder]="filter.title"
+        [formControlName]="filter.name"
+        *ngIf="filter.optTitle"
+      >
+        <mat-option>-</mat-option>
+        <mat-option
+          *ngFor="let option of filter.opts"
+          [value]="option[filter.optValue]"
+          >{{ option[filter.optTitle] }}
+        </mat-option>
+      </mat-select>
+      <mat-select
+        [placeholder]="filter.title"
+        [formControlName]="filter.name"
+        *ngIf="!filter.optTitle"
+      >
+        <mat-option>-</mat-option>
+        <mat-option *ngFor="let option of filter.opts" [value]="option"
+          >{{ option }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field
+      class="block"
+      *ngIf="
+        filter.fieldType === 'reference' &&
+        filter.interface === 'select-multiple'
+      "
+    >
+      <mat-label>{{ filter.title }}</mat-label>
+      <mat-select
+        [placeholder]="filter.title"
+        [formControlName]="filter.name"
+        multiple
+      >
+        <mat-option
+          *ngFor="let option of filter.opts"
+          [value]="option[filter.optValue]"
+          >{{ option[filter.optTitle] }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field
+      class="block"
+      *ngIf="
+        filter.fieldType === 'reference' && filter.interface === 'autocomplete'
+      "
+    >
+      <mat-label>{{ filter.title }}</mat-label>
+      <input
+        matInput
+        [placeholder]="filter.title"
+        [matAutocomplete]="auto"
+        [formControlName]="filter.name"
+      />
+      <mat-autocomplete
+        class="wide-autocomplete"
+        #auto="matAutocomplete"
+        [displayWith]="filter.model.displayAutocomplete.bind(filter.model)"
+      >
+        <mat-option
+          *ngFor="let option of filteredLists[filter.name] | async"
+          [value]="option[filter.optValue]"
+          >{{ option[filter.optTitle] }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <div
+      class="flex gap-4"
+      *ngIf="filter.fieldType === 'number' && !filter.interface"
+    >
+      <mat-form-field class="block">
+        <mat-label>Operator - {{ filter.title }}</mat-label>
+        <mat-select
+          placeholder="Operator"
+          [value]="filter.operator"
+          (selectionChange)="onOperatorChange(filter, $event.value)"
+        >
+          <mat-option value="gt">is greater than</mat-option>
+          <mat-option value="lt">is less than</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="block">
+        <mat-label>{{ filter.title }}</mat-label>
+        <input
+          matInput
+          type="number"
+          [placeholder]="filter.title"
+          [formControlName]="filter.name"
+        />
+      </mat-form-field>
+    </div>
+
+    <div
+      class="flex gap-4"
+      *ngIf="filter.fieldType === 'date' && !filter.interface"
+    >
+      <mat-form-field class="block">
+        <mat-label>Operator - {{ filter.title }}</mat-label>
+        <mat-select
+          placeholder="Operator"
+          [value]="filter.operator"
+          (selectionChange)="onOperatorChange(filter, $event.value)"
+        >
+          <mat-option value="gt">Newer than</mat-option>
+          <mat-option value="lt">Older than</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="block">
+        <mat-label>{{ filter.title }}</mat-label>
+        <input
+          matInput
+          [name]="filter.name"
+          [matDatepicker]="date"
+          [placeholder]="filter.title"
+          [formControlName]="filter.name"
+        />
+        <mat-datepicker-toggle matSuffix [for]="date"></mat-datepicker-toggle>
+        <mat-datepicker #date></mat-datepicker>
+      </mat-form-field>
+    </div>
+  </ng-template>
+</ng-container>

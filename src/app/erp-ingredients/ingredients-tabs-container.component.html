@@ -1,0 +1,13 @@
+
+
+  <mat-tab-group [selectedIndex]="selected.value"
+                 (selectedIndexChange)="selected.setValue($event)">
+    <mat-tab *ngFor="let tab of tabs; let index = index" [label]="tab">
+        <app-ingredients-list
+        [savedFilterValues]="savedInfo[index]"
+        [tabs]="tabs"
+        (searchEvent)="addTab(index, $event)"
+        (EmptySearch)="refresh(index)"
+      ></app-ingredients-list>
+    </mat-tab>
+  </mat-tab-group>

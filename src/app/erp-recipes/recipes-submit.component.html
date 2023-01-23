@@ -1,0 +1,402 @@
+<div class="page-page-container fixed-container">
+  <mat-progress-bar mode="indeterminate" *ngIf="!loaded"></mat-progress-bar>
+
+  <ng-container *ngIf="loaded">
+
+    <div class="message red" *ngIf="!canEdit">
+      You are not allowed to edit this.
+    </div>
+
+    <h1>Submit recipe</h1>
+
+    <form [formGroup]="formData">
+      <div class="wrapper grid-tmpl">
+        <div>
+          <mat-form-field class="block">
+            <mat-label>Kind</mat-label>
+            <mat-select name="kind" formControlName="kind" required="required">
+              <mat-option *ngFor="let type of types" [value]="type.value">
+                {{ type.title }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field ng-class="{'mat-input-invalid': invalid.title}" class="block">
+            <mat-label>Product name</mat-label>
+            <input name="title" matInput formControlName="title" required="required" />
+          </mat-form-field>
+
+          <mat-form-field class="block">
+            <mat-label>Article nr</mat-label>
+            <input matInput name="product" formControlName="articleNr" placeholder="Article nr"
+              aria-mat-label="Article nr" [matAutocomplete]="autoProduct" />
+            <mat-autocomplete #autoProduct="matAutocomplete">
+              <mat-option *ngFor="let product of filteredData.products | async" [value]="product.articleNr">
+                {{ product.title }}
+                <ng-container *ngIf="product.articleNr">#{{ product.articleNr }}</ng-container>
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field class="block">
+            <mat-label>Date</mat-label>
+            <input matInput name="date" formControlName="date" [matDatepicker]="picker" placeholder="Date" />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field class="block" *ngIf="!formData.value.productId">
+            <mat-label>Client</mat-label>
+            <input matInput name="client" formControlName="client" placeholder="Client" aria-mat-label="Client"
+              [matAutocomplete]="autoClient" />
+            <mat-autocomplete #autoClient="matAutocomplete">
+              <mat-option value=""></mat-option>
+              <mat-option *ngFor="let client of filteredData.clients | async" [value]="client._id">{{ client.title }}
+                <ng-container *ngIf="client.number">#{{ client.number }}</ng-container>
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field class="block">
+            <mat-label>Production</mat-label>
+            <input name="production" type="number" matInput formControlName="production" required="required" />
+          </mat-form-field>
+
+          <mat-form-field class="block">
+            <mat-label>Profit %</mat-label>
+            <input name="profit" matInput type="number" formControlName="profit" />
+            <mat-hint align="end" *ngIf="formData.value.kind === 'rtd'">Should be at least {{minMarginalProfit |
+              number}}%</mat-hint>
+          </mat-form-field>
+
+          <mat-checkbox name="isProposal" class="block" [formControl]="isProposal">Is a proposal</mat-checkbox>
+
+          <mat-checkbox name="private" class="block" formControlName="private" *ngIf="showPrivateControl">Is
+            private
+          </mat-checkbox>
+        </div>
+        <div>
+          <mat-form-field class="block" *ngIf="!formData.value.productId">
+            <mat-label>Bottle</mat-label>
+            <input matInput name="bottle" formControlName="bottleId" placeholder="Bottle" aria-mat-label="Bottle"
+              [matAutocomplete]="autoBottle" />
+            <mat-autocomplete #autoBottle="matAutocomplete"
+              [displayWith]="ingredientsService.displayAutocomplete.bind(ingredientsService)">
+              <mat-option value=""></mat-option>
+              <mat-option *ngFor="let bottle of filteredData.bottles | async" [value]="bottle._id">{{ bottle.title }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field class="block" *ngIf="!formData.value.productId">
+            <mat-label>Lock</mat-label>
+            <input matInput name="lock" formControlName="lockId" placeholder="Lock" aria-mat-label="Lock"
+              [matAutocomplete]="autoLock" />
+            <mat-autocomplete #autoLock="matAutocomplete"
+              [displayWith]="ingredientsService.displayAutocomplete.bind(ingredientsService)">
+              <mat-option value=""></mat-option>
+              <mat-option *ngFor="let lock of filteredData.locks | async" [value]="lock._id">{{ lock.title }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+
+          <mat-form-field class="block" *ngIf="!formData.value.productId && (formData.value.kind === 'prot-gain' ||
+          formData.value.kind === 'amino' ||
+          formData.value.kind === 'ren-amino' ||
+          formData.value.kind === 'rtd')">
+            <mat-label>Scoop</mat-label>
+            <input matInput name="scoop" formControlName="scoopId" placeholder="Scoop" aria-mat-label="Scoop"
+              [matAutocomplete]="autoScoop" />
+            <mat-autocomplete #autoScoop="matAutocomplete"
+              [displayWith]="ingredientsService.displayAutocomplete.bind(ingredientsService)">
+              <mat-option value=""></mat-option>
+              <mat-option *ngFor="let scoop of filteredData.scoops | async" [value]="scoop._id">{{ scoop.title }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field class="block" *ngIf="!formData.value.productId && (formData.value.kind === 'cps-gelatin' ||
+          formData.value.kind === 'cps-vege' ||
+          formData.value.kind === 'cps-vege-000')">
+            <mat-label>Cap</mat-label>
+            <input matInput name="cap" formControlName="capId" placeholder="Cap" aria-mat-label="Cap"
+              [matAutocomplete]="autoCap" />
+            <mat-autocomplete #autoCap="matAutocomplete"
+              [displayWith]="ingredientsService.displayAutocomplete.bind(ingredientsService)">
+              <mat-option value=""></mat-option>
+              <mat-option *ngFor="let cap of filteredData.caps | async" [value]="cap._id">{{ cap.title }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <ng-container *ngIf="
+              formData.value.kind === 'prot-gain' ||
+              formData.value.kind === 'amino' ||
+              formData.value.kind === 'ren-amino' ||
+              formData.value.kind === 'rtd'
+            ">
+
+            <mat-form-field class="block">
+              <mat-label>Taste</mat-label>
+              <input name="taste" matInput formControlName="taste" />
+            </mat-form-field>
+
+            <mat-form-field class="block">
+              <mat-label>Batch</mat-label>
+              <input name="batch" type="number" matInput formControlName="batch" required="required" />
+            </mat-form-field>
+
+          </ng-container>
+
+          <ng-container *ngIf="
+              formData.value.kind === 'cps-gelatin' ||
+              formData.value.kind === 'cps-vege' ||
+              formData.value.kind === 'cps-vege-000'
+            ">
+            <mat-form-field class="block">
+              <mat-label>Color cps</mat-label>
+              <input name="colorCps" matInput formControlName="colorCps" />
+            </mat-form-field>
+          </ng-container>
+
+          <ng-container *ngIf="
+              (formData.value.kind === 'cps-gelatin' ||
+                formData.value.kind === 'cps-vege-000' ||
+                formData.value.kind === 'cps-vege' ||
+                formData.value.kind === 'tabletter') &&
+              auth.isSuperAdmin
+            ">
+            <mat-form-field class="block" *ngIf="!data.useDefaultPriceCps">
+              <mat-label>Price CPS/TAB EUR</mat-label>
+              <input name="priceTab" matInput type="number" formControlName="priceCpsEUR" />
+            </mat-form-field>
+
+            <mat-checkbox name="useDefaultPriceCps" class="block" formControlName="useDefaultPriceCps">Use default price
+              CPS/TAB
+            </mat-checkbox>
+          </ng-container>
+
+          <mat-checkbox name="priceIncludesContainer" class="block form-height" formControlName="priceIncludesContainer"
+            *ngIf="formData.value.kind === 'rtd'">Price includes can
+          </mat-checkbox>
+
+          <ng-container *ngIf=" formData.value.kind ==='omega-cla' || formData.value.kind ==='cps-gelatin' ||
+                formData.value.kind ==='cps-vege-000' || formData.value.kind ==='cps-vege' ">
+            <mat-form-field class=" block">
+              <mat-label>Qty cps</mat-label>
+              <input name="cpsQty" matInput type="number" formControlName="cpsQty" required="required" />
+            </mat-form-field>
+            <mat-form-field class="block">
+              <mat-label>Qty bottle</mat-label>
+              <input name="bottleQty" matInput type="number" formControlName="bottleQty" required="required" />
+            </mat-form-field>
+          </ng-container>
+
+
+          <mat-form-field class="block">
+            <mat-label>Bottle size
+              <ng-container *ngIf="
+                    formData.value.kind === 'omega-cla' ||
+                    formData.value.kind === 'cps-gelatin' ||
+                    formData.value.kind === 'cps-vege-000' ||
+                    formData.value.kind === 'cps-vege'
+                  ">
+                cps</ng-container>
+              <ng-container *ngIf="formData.value.kind === 'tabletter'"> TAB</ng-container>
+              <ng-container *ngIf="
+                    formData.value.kind === 'prot-gain' ||
+                    formData.value.kind === 'amino' ||
+                    formData.value.kind === 'ren-amino' ||
+                    formData.value.kind === 'rtd'
+                  ">
+                kg</ng-container>
+            </mat-label>
+            <input name="bottleSize" matInput type="number" formControlName="bottleSize" required="required" />
+          </mat-form-field>
+
+          <mat-form-field class="block"
+            *ngIf="formData.value.kind === 'prot-gain' || formData.value.kind === 'amino' || formData.value.kind === 'ren-amino'">
+            <mat-label>Grams per portion</mat-label>
+            <input name="gramsPerPortion" matInput type="number" formControlName="gramsPerPortion" />
+          </mat-form-field>
+
+          <mat-form-field class="block"
+            *ngIf="formData.value.kind === 'cps-gelatin' || formData.value.kind === 'cps-vege' || formData.value.kind === 'cps-vege-000' || formData.value.kind === 'tabletter' || formData.value.kind === 'omega-cla'">
+            <mat-label>Servings per portion</mat-label>
+            <input name="servingsPerPortion" matInput type="number" formControlName="servingsPerPortion" />
+          </mat-form-field>
+
+          <ng-container *ngIf="formData.value.productId || formData.value.client">
+            <mat-form-field class="block">
+              <mat-label>Client price</mat-label>
+              <input name="clientPrice" type="number" matInput formControlName="clientPrice" />
+            </mat-form-field>
+          </ng-container>
+
+          <ng-container *ngIf="formData.value.kind === 'tabletter'">
+            <div>
+              <mat-form-field class="block">
+                <mat-label>Tab Form</mat-label>
+                <input name="tabForm" matInput formControlName="tabForm" />
+              </mat-form-field>
+              <mat-form-field class="block">
+                <mat-label>Qty bottle</mat-label>
+                <input name="bottleQty" matInput type="number" formControlName="bottleQty" required="required" />
+              </mat-form-field>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="wrapper">
+        <h3>Notes</h3>
+
+        <mat-form-field class="block">
+          <mat-label>Notes</mat-label>
+          <textarea matInput name="note" placeholder="Notes" formControlName="note"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="message red" *ngIf="!formData.value.kind">
+        Select a kind first to select ingredients
+      </div>
+
+      <table *ngIf="formData.value.kind" class="form-table" formArrayName="items">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th *ngIf="formData.value.kind === 'prot-gain'">Item kg</th>
+            <th *ngIf="
+                formData.value.kind === 'amino' ||
+                formData.value.kind === 'ren-amino' ||
+                formData.value.kind === 'rtd'
+              ">
+              Material g x portion
+            </th>
+            <th *ngIf="formData.value.kind === 'omega-cla'">Material x cps</th>
+            <th *ngIf="
+                formData.value.kind === 'cps-gelatin' ||
+                formData.value.kind === 'cps-vege-000' ||
+                formData.value.kind === 'cps-vege' ||
+                formData.value.kind === 'tabletter'
+              ">
+              Raw material gr x tab
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="
+            let item of formData.get('items')['controls'];
+            let i = index
+          " [formGroupName]="i">
+            <td>{{ item.value.ingredientId }}</td>
+            <td *ngIf="formData.value.kind === 'prot-gain'">
+              <mat-form-field class="block">
+                <mat-label>Item kg</mat-label>
+                <input matInput formControlName="kg" type="number" name="kg" />
+              </mat-form-field>
+            </td>
+            <td *ngIf="
+                formData.value.kind === 'amino' ||
+                formData.value.kind === 'ren-amino' ||
+                formData.value.kind === 'rtd'
+              ">
+              <mat-form-field class="block">
+                <mat-label>Material g x portion</mat-label>
+                <input matInput formControlName="gramsPortion" type="number" name="gramsPortion" />
+              </mat-form-field>
+            </td>
+            <td *ngIf="formData.value.kind === 'omega-cla'">
+              <mat-form-field class="block">
+                <mat-label>Material x cps</mat-label>
+                <input matInput formControlName="ingredientQtyCps" type="number" name="ingredientQtyCps" />
+              </mat-form-field>
+            </td>
+            <td *ngIf="
+                formData.value.kind === 'cps-gelatin' ||
+                formData.value.kind === 'cps-vege-000' ||
+                formData.value.kind === 'cps-vege' ||
+                formData.value.kind === 'tabletter'
+              ">
+              <mat-form-field class="block">
+                <mat-label>Raw material gr x tab</mat-label>
+                <input matInput formControlName="gramsTab" type="number" name="gramsTab" />
+              </mat-form-field>
+            </td>
+            <td>
+              <button mat-raised-button color="warn" (dblclick)="removeItem(i)">Remove</button>
+            </td>
+          </tr>
+
+          <tr [formGroup]="newItem">
+            <td>
+              <mat-form-field class="block">
+                <mat-label>Ingredient</mat-label>
+                <input matInput formControlName="ingredientId" placeholder="Ingredient" aria-mat-label="Ingredient"
+                  [matAutocomplete]="auto" />
+                <mat-autocomplete #auto="matAutocomplete"
+                  [displayWith]="ingredientsService.displayAutocomplete.bind(ingredientsService)">
+                  <mat-option *ngFor="let ingredient of filteredData.ingredients | async" [value]="ingredient._id">
+                    {{ ingredient.title }}</mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+            </td>
+            <td *ngIf="formData.value.kind === 'prot-gain'">
+              <mat-form-field class="block">
+                <mat-label>Item kg</mat-label>
+                <input matInput name="kg" type="number" formControlName="kg" />
+              </mat-form-field>
+            </td>
+            <td *ngIf="
+                formData.value.kind === 'amino' ||
+                formData.value.kind === 'ren-amino' ||
+                formData.value.kind === 'rtd'
+              ">
+              <mat-form-field class="block">
+                <mat-label>Material g x portion</mat-label>
+                <input matInput name="gramsPortion" type="number" formControlName="gramsPortion" />
+              </mat-form-field>
+            </td>
+            <td *ngIf="formData.value.kind === 'omega-cla'">
+              <mat-form-field class="block">
+                <mat-label>Material x cps</mat-label>
+                <input matInput name="ingredientQtyCps" type="number" formControlName="ingredientQtyCps" />
+              </mat-form-field>
+            </td>
+            <td *ngIf="
+                formData.value.kind === 'cps-gelatin' ||
+                formData.value.kind === 'cps-vege-000' ||
+                formData.value.kind === 'cps-vege' ||
+                formData.value.kind === 'tabletter'
+              ">
+              <mat-form-field class="block">
+                <mat-label>Raw material gr x tab</mat-label>
+                <input matInput name="gramsTab" type="number" formControlName="gramsTab" />
+              </mat-form-field>
+            </td>
+            <td>
+              <button mat-raised-button (click)="addItem()" ng-disabled="!newItem.ingredient">
+                Add item
+              </button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+    </form>
+  </ng-container>
+</div>
+
+<div class="actions">
+  <div class="left">
+    <a mat-raised-button [routerLink]="['..']"> Cancel </a>
+  </div>
+  <div class="right">
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="formData && formData.invalid || !canEdit">
+      Save
+    </button>
+  </div>
+</div>
