@@ -7,16 +7,20 @@ import { ErpFiltersModule } from '../erp-filters/erp-filters.module'
 import { IngredientSubmitComponent } from './ingredient-submit.component'
 import { IngredientsListComponent } from './ingredients-list.component'
 import { IngredientsTabsContainerComponent } from './ingredients-tabs-container.component'
-import { MatTabsModule } from '@angular/material/tabs'
+import {MatTabsModule} from '@angular/material/tabs';
 
 const routes: Routes = [
   {
     path: '',
-    component: IngredientsTabsContainerComponent,
+    component: IngredientsListComponent,
   },
   {
     path: 'create',
     component: IngredientSubmitComponent,
+  },
+  {
+    path: 'tabs',
+    component: IngredientsTabsContainerComponent,
   },
 ]
 
@@ -29,11 +33,7 @@ const routes: Routes = [
     MatTabsModule,
   ],
   exports: [],
-  declarations: [
-    IngredientSubmitComponent,
-    IngredientsListComponent,
-    IngredientsTabsContainerComponent,
-  ],
+  declarations: [IngredientSubmitComponent, IngredientsListComponent, IngredientsTabsContainerComponent],
   providers: [],
 })
 export class IngredientsModule {}

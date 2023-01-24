@@ -18,11 +18,11 @@ export class IngredientsTabsContainerComponent implements OnInit {
     this.getTabsFromService()
   }
 
-  addTab(index, change) {
+  addTab(change) {
     if (!this.isNewTab) {
 
-      this.tabs[index + 1] = 'New Search'
-      this.selected.setValue(index + 1)
+      this.tabs.push('New Search')
+      this.selected.setValue(this.tabs.length)
       this.savedInfo.push(['New Search', change])
       this.isNewTab = true
     }

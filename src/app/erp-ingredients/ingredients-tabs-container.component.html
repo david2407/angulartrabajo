@@ -6,7 +6,7 @@
         <app-ingredients-list
         [savedFilterValues]="savedInfo[index]"
         [tabs]="tabs"
-        (searchEvent)="addTab(index, $event)"
+        (searchEvent)="addTab($event)"
         (EmptySearch)="refresh(index)"
       ></app-ingredients-list>
     </mat-tab>
